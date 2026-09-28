@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Как я провёл лето — пример вёрстки по БЭМ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   ТОКЕНЫ / ПЕРЕМЕННЫЕ
+   ============================================================ */
+:root{
+  --color-bg: #FFF7E6;
+  --color-bg-soft: #FFEFCF;
+  --color-surface: #FFFFFF;
+  --color-ink: #1F2A2E;
+  --color-ink-muted: #55625F;
+  --color-teal: #0E7C86;
+  --color-teal-deep: #0B5C66;
+  --color-coral: #FF6B4A;
+  --color-coral-deep: #E85436;
+  --color-gold: #F5A623;
+  --color-border: rgba(31,42,46,0.14);
+  --shadow-color: 31,42,46;
+
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --space-6: 3rem;
+  --space-7: 4rem;
+  --space-8: 6rem;
+
+  --radius-sm: 4px;
+  --radius-md: 10px;
+  --container: 1120px;
+  --container-narrow: 660px;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --color-bg: #0F1B1D;
+    --color-bg-soft: #16262A;
+    --color-surface: #17282C;
+    --color-ink: #F3ECD9;
+    --color-ink-muted: #B9C4C1;
+    --color-teal: #55D6DE;
+    --color-teal-deep: #7CE3E9;
+    --color-coral: #FF9376;
+    --color-coral-deep: #FFAA92;
+    --color-gold: #FFC876;
+    --color-border: rgba(243,236,217,0.16);
+    --shadow-color: 0,0,0;
+  }
+}
+:root[data-theme="dark"]{
+  --color-bg: #0F1B1D;
+  --color-bg-soft: #16262A;
+  --color-surface: #17282C;
+  --color-ink: #F3ECD9;
+  --color-ink-muted: #B9C4C1;
+  --color-teal: #55D6DE;
+  --color-teal-deep: #7CE3E9;
+  --color-coral: #FF9376;
+  --color-coral-deep: #FFAA92;
+  --color-gold: #FFC876;
+  --color-border: rgba(243,236,217,0.16);
+  --shadow-color: 0,0,0;
+}
+
+/* ============================================================
+   БАЗА / СБРОС
+   ============================================================ */
+*, *::before, *::after{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+  *, *::before, *::after{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+body{
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg{ max-width: 100%; display: block; }
+h1, h2, h3{ font-family: var(--font-display); margin: 0; line-height: 1.15; font-weight: 700; }
+p{ margin: 0; }
+ul{ margin: 0; padding: 0; list-style: none; }
+button{ font-family: inherit; cursor: pointer; }
+a{ color: var(--color-teal-deep); }
+:focus-visible{ outline: 3px solid var(--color-coral); outline-offset: 3px; }
+
+/* ============================================================
+   Блок .header
+   ============================================================ */
+.header{
+  position: relative;
+  padding: var(--space-7) var(--space-4) var(--space-8);
+  background: linear-gradient(160deg, #123B45 0%, #0E7C86 46%, #FF8A5B 100%);
+  color: #FFF7E6;
+  text-align: center;
+  overflow: hidden;
+}
+.header__inner{
+  max-width: var(--container-narrow);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  animation: header-rise 0.7s ease-out both;
+}
+@keyframes header-rise{
+  from{ opacity: 0; transform: translateY(14px); }
+  to{ opacity: 1; transform: translateY(0); }
+}
+.header__chip{
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: rgba(255,247,230,0.16);
+  border: 1px solid rgba(255,247,230,0.4);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-4);
+}
+.header__title{
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  letter-spacing: -0.01em;
+}
+.header__subtitle{
+  margin-top: var(--space-4);
+  font-size: 1.15rem;
+  color: rgba(255,247,230,0.9);
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.header__scroll{
+  margin-top: var(--space-6);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.9rem;
+  color: rgba(255,247,230,0.8);
+}
+.header__scroll-arrow{
+  width: 18px; height: 18px;
+  border-right: 2px solid rgba(255,247,230,0.8);
+  border-bottom: 2px solid rgba(255,247,230,0.8);
+  transform: rotate(45deg);
+  animation: header-bob 2.2s ease-in-out infinite;
+}
+@keyframes header-bob{
+  0%, 100%{ transform: rotate(45deg) translate(0,0); }
+  50%{ transform: rotate(45deg) translate(4px,4px); }
+}
+.header__wave{
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  width: 100%; height: 90px;
+  z-index: 0;
+}
+.header__wave-path{ fill: var(--color-bg); }
+
+/* ============================================================
+   Блок .chip  (переиспользуемая деталь: даты, теги, метки)
+   ============================================================ */
+.chip{
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3em 0.85em;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-ink-muted);
+  background: transparent;
+}
+.chip--accent{
+  border-color: transparent;
+  background: var(--color-teal);
+  color: #FFF7E6;
+}
+
+/* ============================================================
+   Блок .carousel  (переиспользуется: hero-версия и compact-версия внутри событий)
+   ============================================================ */
+.carousel{ position: relative; }
+.carousel__frame{
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-2) var(--space-5);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 18px 34px -14px rgba(var(--shadow-color), 0.35);
+}
+.carousel--hero .carousel__frame{ transform: rotate(-1.6deg); }
+.carousel__viewport{
+  overflow: hidden;
+  border-radius: 2px;
+}
+.carousel__track{
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.65,0,0.35,1);
+  will-change: transform;
+}
+.carousel__slide{
+  flex: 0 0 100%;
+  min-width: 0;
+}
+.carousel__photo{ aspect-ratio: 4 / 3; width: 100%; }
+.carousel__caption{
+  display: block;
+  text-align: center;
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  color: var(--color-ink-muted);
+  margin-top: var(--space-2);
+}
+.carousel--compact .carousel__caption{ font-size: 1.15rem; }
+
+.carousel__control{
+  position: absolute;
+  top: 42%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 6px 16px -6px rgba(var(--shadow-color), 0.4);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.carousel__control:hover{ background: var(--color-teal); color: #fff; }
+.carousel__control--prev{ left: -18px; }
+.carousel__control--next{ right: -18px; }
+.carousel--compact .carousel__control{ width: 32px; height: 32px; font-size: 1rem; }
+.carousel--compact .carousel__control--prev{ left: -12px; }
+.carousel--compact .carousel__control--next{ right: -12px; }
+
+.carousel__dots{
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+.carousel__dot{
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  padding: 0;
+}
+.carousel__dot--active{ background: var(--color-teal); width: 22px; border-radius: 4px; transition: width 0.25s ease; }
+
+/* ============================================================
+   Блок .gallery  (секция-обёртка для главной карусели)
+   ============================================================ */
+.gallery{ padding: var(--space-7) var(--space-4) var(--space-6); }
+.gallery__inner{ max-width: 420px; margin: 0 auto; text-align: center; }
+.gallery__title{ font-size: clamp(1.5rem, 3.4vw, 2rem); }
+.gallery__lead{
+  margin-top: var(--space-2);
+  color: var(--color-ink-muted);
+  font-size: 1rem;
+}
+.gallery__carousel{ margin-top: var(--space-5); }
+
+/* ============================================================
+   Блок .intro
+   ============================================================ */
+.intro{ padding: 0 var(--space-4) var(--space-7); }
+.intro__inner{ max-width: var(--container-narrow); margin: 0 auto; }
+.intro__text{ font-size: 1.15rem; color: var(--color-ink); text-align: center; }
+
+/* ============================================================
+   Блок .timeline  (хроника событий лета)
+   ============================================================ */
+.timeline{ padding: 0 var(--space-4) var(--space-8); position: relative; }
+.timeline__inner{ max-width: var(--container); margin: 0 auto; }
+.timeline__title{
+  font-size: clamp(1.6rem, 3.6vw, 2.2rem);
+  text-align: center;
+  margin-bottom: var(--space-7);
+}
+.timeline__list{ position: relative; display: flex; flex-direction: column; gap: var(--space-8); }
+.timeline__list::before{
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0; left: 50%;
+  width: 0;
+  border-left: 2px dashed var(--color-border);
+  transform: translateX(-50%);
+}
+
+/* ============================================================
+   Блок .event
+   ============================================================ */
+.event{
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+}
+.event--reverse{ flex-direction: row-reverse; }
+.event__media{ flex: 0 0 44%; max-width: 380px; }
+.event:nth-child(odd) .carousel__frame{ transform: rotate(-2deg); }
+.event:nth-child(even) .carousel__frame{ transform: rotate(1.6deg); }
+.event__body{ flex: 1; min-width: 0; }
+.event__date{ margin-bottom: var(--space-2); }
+.event__title{ font-size: clamp(1.3rem, 2.6vw, 1.7rem); margin-bottom: var(--space-3); }
+.event__text{ color: var(--color-ink); max-width: 52ch; }
+.event__tags{ display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-4); }
+.event__marker{
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--color-coral);
+  border: 3px solid var(--color-bg);
+  transform: translate(-50%, -50%);
+}
+
+/* ============================================================
+   Блок .footer
+   ============================================================ */
+.footer{
+  background: var(--color-bg-soft);
+  padding: var(--space-8) var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+.footer__inner{ max-width: var(--container-narrow); margin: 0 auto; text-align: center; }
+.footer__title{ font-size: clamp(1.6rem, 3.4vw, 2.1rem); }
+.footer__stats{
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin: var(--space-6) 0;
+}
+.footer__stat{ min-width: 90px; }
+.footer__stat-number{
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  color: var(--color-teal);
+  font-weight: 700;
+}
+.footer__stat-label{ font-size: 0.9rem; color: var(--color-ink-muted); }
+.footer__text{ font-size: 1.1rem; text-align: left; }
+.footer__skills{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-5) 0;
+}
+.footer__note{
+  font-family: var(--font-hand);
+  font-size: 1.6rem;
+  color: var(--color-coral-deep);
+  margin-top: var(--space-5);
+}
+.footer__meta{
+  margin-top: var(--space-6);
+  font-size: 0.85rem;
+  color: var(--color-ink-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+/* ============================================================
+   Блок .inspector  (учебная утилита: показать имена БЭМ-классов)
+   ============================================================ */
+.inspector__toggle{
+  position: fixed;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 50;
+  padding: 0.6em 1em;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px -8px rgba(var(--shadow-color), 0.4);
+}
+.inspector__toggle--active{ background: var(--color-teal); color: #fff; border-color: transparent; }
+.inspector__tooltip{
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  max-width: 280px;
+  white-space: normal;
+}
+.inspector-highlight{ outline: 2px dashed var(--color-coral) !important; outline-offset: 3px; }
+
+/* ============================================================
+   АДАПТИВНОСТЬ
+   ============================================================ */
+@media (max-width: 760px){
+  .event, .event--reverse{ flex-direction: column; align-items: stretch; gap: var(--space-4); }
+  .event__media{ max-width: none; }
+  .timeline__list::before{ display: none; }
+  .event__marker{ display: none; }
+  .timeline__list{ gap: var(--space-6); }
+  .footer__text{ text-align: center; }
+  .carousel__control--prev{ left: -10px; }
+  .carousel__control--next{ right: -10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Общие SVG-градиенты, переиспользуемые всеми иллюстрациями ниже -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-sky-dawn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFB37A"/><stop offset="55%" stop-color="#FF8A5B"/><stop offset="100%" stop-color="#FFD9A0"/>
+    </linearGradient>
+    <linearGradient id="g-sky-day" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#BDEDEF"/><stop offset="100%" stop-color="#EAF9F5"/>
+    </linearGradient>
+    <linearGradient id="g-sky-dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#123B45"/><stop offset="100%" stop-color="#FF7A59"/>
+    </linearGradient>
+    <linearGradient id="g-sky-night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0B1622"/><stop offset="100%" stop-color="#123B45"/>
+    </linearGradient>
+    <linearGradient id="g-sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#12909B"/><stop offset="100%" stop-color="#0B5C66"/>
+    </linearGradient>
+    <linearGradient id="g-sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6E1AE"/><stop offset="100%" stop-color="#E7C079"/>
+    </linearGradient>
+    <linearGradient id="g-mountain-far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9FC3C4"/><stop offset="100%" stop-color="#7FA9AC"/>
+    </linearGradient>
+    <linearGradient id="g-mountain-near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4F8B8F"/><stop offset="100%" stop-color="#316366"/>
+    </linearGradient>
+    <linearGradient id="g-foliage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5C9B76"/><stop offset="100%" stop-color="#356B4E"/>
+    </linearGradient>
+    <linearGradient id="g-wood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B5E3C"/><stop offset="100%" stop-color="#6B4529"/>
+    </linearGradient>
+    <radialGradient id="g-sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFE9B0"/><stop offset="100%" stop-color="#F5A623"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<!-- ============================================================
+     Блок .header
+     ============================================================ -->
+<header class="header">
+  <div class="header__inner">
+    <span class="header__chip">Дневник лета</span>
+    <h1 class="header__title">Как я провёл лето</h1>
+    <p class="header__subtitle">Три месяца 2026 года, пять городов и деревень на карте памяти и один блокнот, который не выдержал и начал рваться по швам</p>
+    <div class="header__scroll"><span>Пролистать историю</span><span class="header__scroll-arrow"></span></div>
+  </div>
+  <svg class="header__wave" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+    <path class="header__wave-path" d="M0,40 C240,90 480,0 720,30 C960,60 1200,90 1440,40 L1440,100 L0,100 Z"/>
+  </svg>
+</header>
+
+<!-- ============================================================
+     Блок .gallery + вложенный блок .carousel (модификатор --hero)
+     ============================================================ -->
+<section class="gallery">
+  <div class="gallery__inner">
+    <h2 class="gallery__title">Пять кадров одного лета</h2>
+    <p class="gallery__lead">Если бы можно было сохранить только пять моментов — я бы выбрал эти.</p>
+
+    <div class="gallery__carousel">
+      <div class="carousel carousel--hero" data-carousel>
+        <div class="carousel__frame">
+          <div class="carousel__viewport">
+            <ul class="carousel__track">
+              <li class="carousel__slide">
+                <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Рассвет над морем">
+                  <rect width="400" height="185" fill="url(#g-sky-dawn)"/>
+                  <circle cx="200" cy="175" r="34" fill="url(#g-sun)"/>
+                  <rect y="175" width="400" height="125" fill="url(#g-sea)"/>
+                  <path d="M0 195 Q40 185 80 195 T160 195 T240 195 T320 195 T400 195" stroke="#DFF4F2" stroke-width="3" fill="none" opacity="0.5"/>
+                  <path d="M0 220 Q40 210 80 220 T160 220 T240 220 T320 220 T400 220" stroke="#DFF4F2" stroke-width="3" fill="none" opacity="0.35"/>
+                </svg>
+                <span class="carousel__caption">Пляж в шесть утра — и ни следа на песке</span>
+              </li>
+              <li class="carousel__slide">
+                <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Горная тропа">
+                  <rect width="400" height="300" fill="url(#g-sky-day)"/>
+                  <polygon points="0,190 90,90 180,190" fill="url(#g-mountain-far)"/>
+                  <polygon points="140,200 250,80 360,200" fill="url(#g-mountain-far)"/>
+                  <polygon points="60,220 190,110 320,220" fill="url(#g-mountain-near)"/>
+                  <path d="M40 300 Q120 230 190 260 T400 230" stroke="#F6E1AE" stroke-width="10" fill="none" opacity="0.8"/>
+                </svg>
+                <span class="carousel__caption">Тот самый перевал на второй день похода</span>
+              </li>
+              <li class="carousel__slide">
+                <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Ноутбук с первым кодом">
+                  <rect width="400" height="300" fill="#FFF6E0"/>
+                  <rect y="230" width="400" height="70" fill="#E7C079" opacity="0.4"/>
+                  <rect x="120" y="90" width="160" height="105" rx="6" fill="#123B45"/>
+                  <rect x="132" y="102" width="136" height="81" rx="2" fill="#0B5C66"/>
+                  <rect x="145" y="115" width="60" height="6" rx="3" fill="#F5A623"/>
+                  <rect x="145" y="130" width="90" height="6" rx="3" fill="#FF6B4A"/>
+                  <rect x="145" y="145" width="45" height="6" rx="3" fill="#8FE0E6"/>
+                  <path d="M95 195 L305 195 L285 225 L115 225Z" fill="#0E7C86"/>
+                </svg>
+                <span class="carousel__caption">Строчка кода, которая наконец заработала</span>
+              </li>
+              <li class="carousel__slide">
+                <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Дом бабушки в деревне">
+                  <rect width="400" height="180" fill="url(#g-sky-day)"/>
+                  <circle cx="345" cy="45" r="24" fill="url(#g-sun)"/>
+                  <rect y="180" width="400" height="120" fill="url(#g-foliage)"/>
+                  <rect x="140" y="120" width="120" height="90" fill="#F6E1AE"/>
+                  <polygon points="130,120 200,65 270,120" fill="#FF6B4A"/>
+                  <rect x="185" y="155" width="30" height="55" fill="#6B4529"/>
+                  <rect x="150" y="140" width="26" height="26" fill="#0E7C86"/>
+                </svg>
+                <span class="carousel__caption">Крыльцо, с которого видно весь огород</span>
+              </li>
+              <li class="carousel__slide">
+                <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Звёздное небо во дворе">
+                  <rect width="400" height="300" fill="url(#g-sky-night)"/>
+                  <circle cx="90" cy="60" r="20" fill="#FFF6E0" opacity="0.9"/>
+                  <circle cx="100" cy="52" r="20" fill="url(#g-sky-night)"/>
+                  <g fill="#FFF6E0">
+                    <circle cx="180" cy="40" r="2"/><circle cx="220" cy="80" r="1.6"/><circle cx="270" cy="45" r="2"/>
+                    <circle cx="320" cy="90" r="1.6"/><circle cx="150" cy="100" r="1.4"/><circle cx="60" cy="130" r="1.6"/>
+                  </g>
+                  <polygon points="0,230 60,190 130,215 190,180 260,210 330,195 400,225 400,300 0,300" fill="#123B45"/>
+                </svg>
+                <span class="carousel__caption">Последний тёплый вечер перед школой</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+        <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+        <div class="carousel__dots"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     Блок .intro
+     ============================================================ -->
+<section class="intro">
+  <div class="intro__inner">
+    <p class="intro__text">Первого июня я закрыл тетрадь по алгебре и, если честно, не открывал ни одной учебной книги до конца августа. Зато открыл для себя много другого: как разжигать костёр с одной спички, как выглядит рассвет над морем и почему вёрстка сайта — это почти как раскладывать вещи по полкам, только полки называются классами. Вот пять историй, которые случились со мной этим летом.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     Блок .timeline, внутри — пять блоков .event
+     ============================================================ -->
+<section class="timeline">
+  <div class="timeline__inner">
+    <h2 class="timeline__title">Хроника лета</h2>
+    <ul class="timeline__list">
+
+      <!-- Событие 1 -->
+      <li class="event">
+        <span class="event__marker"></span>
+        <div class="event__media">
+          <div class="carousel carousel--compact" data-carousel>
+            <div class="carousel__frame">
+              <div class="carousel__viewport">
+                <ul class="carousel__track">
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Рассвет над морем">
+                      <rect width="400" height="185" fill="url(#g-sky-dawn)"/>
+                      <circle cx="200" cy="175" r="34" fill="url(#g-sun)"/>
+                      <rect y="175" width="400" height="125" fill="url(#g-sea)"/>
+                      <path d="M0 195 Q40 185 80 195 T160 195 T240 195 T320 195 T400 195" stroke="#DFF4F2" stroke-width="3" fill="none" opacity="0.5"/>
+                    </svg>
+                    <span class="carousel__caption">Первое море в жизни</span>
+                  </li>
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Пляж с зонтом">
+                      <rect width="400" height="110" fill="url(#g-sky-day)"/>
+                      <rect y="110" width="400" height="55" fill="url(#g-sea)"/>
+                      <rect y="165" width="400" height="135" fill="url(#g-sand)"/>
+                      <line x1="150" y1="130" x2="150" y2="230" stroke="#6B4529" stroke-width="5" stroke-linecap="round"/>
+                      <path d="M90 130 Q150 85 210 130 Q150 145 90 130Z" fill="#FF6B4A"/>
+                      <rect x="235" y="215" width="90" height="45" rx="4" fill="#FFF6E0" stroke="#F5A623" stroke-width="6"/>
+                    </svg>
+                    <span class="carousel__caption">Пустой пляж в семь утра</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+            <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+            <div class="carousel__dots"></div>
+          </div>
+        </div>
+        <div class="event__body">
+          <span class="chip chip--accent event__date">Июнь</span>
+          <h3 class="event__title">Море, которое я увидел впервые</h3>
+          <p class="event__text">Первую неделю каникул мы всей семьёй уехали на юг. Я никогда раньше не видел море вживую и первые полчаса просто стоял на берегу с открытым ртом. Мы вставали в шесть утра, чтобы застать пустой пляж и розовый рассвет — и это оказалось лучшей частью поездки, даже лучше, чем сам пляж днём.</p>
+          <div class="event__tags">
+            <span class="chip">#море</span><span class="chip">#рассвет</span><span class="chip">#юг</span>
+          </div>
+        </div>
+      </li>
+
+      <!-- Событие 2 -->
+      <li class="event event--reverse">
+        <span class="event__marker"></span>
+        <div class="event__media">
+          <div class="carousel carousel--compact" data-carousel>
+            <div class="carousel__frame">
+              <div class="carousel__viewport">
+                <ul class="carousel__track">
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Горная тропа">
+                      <rect width="400" height="300" fill="url(#g-sky-day)"/>
+                      <polygon points="0,190 90,90 180,190" fill="url(#g-mountain-far)"/>
+                      <polygon points="140,200 250,80 360,200" fill="url(#g-mountain-far)"/>
+                      <polygon points="60,220 190,110 320,220" fill="url(#g-mountain-near)"/>
+                      <path d="M40 300 Q120 230 190 260 T400 230" stroke="#F6E1AE" stroke-width="10" fill="none" opacity="0.8"/>
+                      <polygon points="60,240 72,210 84,240" fill="url(#g-foliage)"/>
+                    </svg>
+                    <span class="carousel__caption">Тропа наверх</span>
+                  </li>
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Костёр ночью в горах">
+                      <rect width="400" height="300" fill="url(#g-sky-night)"/>
+                      <circle cx="320" cy="55" r="22" fill="#FFF6E0" opacity="0.9"/>
+                      <circle cx="330" cy="48" r="22" fill="url(#g-sky-night)"/>
+                      <g fill="#FFF6E0"><circle cx="60" cy="40" r="2"/><circle cx="110" cy="70" r="1.6"/><circle cx="220" cy="55" r="2"/></g>
+                      <polygon points="90,230 140,140 190,230" fill="#123B45"/>
+                      <polygon points="120,230 140,160 160,230" fill="#0B1622"/>
+                      <rect x="230" y="245" width="60" height="8" rx="3" fill="url(#g-wood)"/>
+                      <path d="M255 245 q5 -30 3 -45 q10 15 5 45Z" fill="#F5A623"/>
+                      <path d="M265 245 q3 -22 0 -34 q8 12 4 34Z" fill="#FFE9B0"/>
+                    </svg>
+                    <span class="carousel__caption">Костёр и одна гитара на пятерых</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+            <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+            <div class="carousel__dots"></div>
+          </div>
+        </div>
+        <div class="event__body">
+          <span class="chip chip--accent event__date">Июль</span>
+          <h3 class="event__title">Поход в горы с классом</h3>
+          <p class="event__text">Наш классный руководитель предложил трёхдневный поход — и половина класса согласилась просто из любопытства. Мы натёрли ноги в первый же час, зато вечером у костра пели под одну гитару на пятерых и договорились, что в следующем году идём снова, но уже с нормальными ботинками.</p>
+          <div class="event__tags">
+            <span class="chip">#поход</span><span class="chip">#друзья</span><span class="chip">#костёр</span>
+          </div>
+        </div>
+      </li>
+
+      <!-- Событие 3 -->
+      <li class="event">
+        <span class="event__marker"></span>
+        <div class="event__media">
+          <div class="carousel carousel--compact" data-carousel>
+            <div class="carousel__frame">
+              <div class="carousel__viewport">
+                <ul class="carousel__track">
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Ноутбук с кодом">
+                      <rect width="400" height="300" fill="#FFF6E0"/>
+                      <rect y="230" width="400" height="70" fill="#E7C079" opacity="0.4"/>
+                      <rect x="120" y="90" width="160" height="105" rx="6" fill="#123B45"/>
+                      <rect x="132" y="102" width="136" height="81" rx="2" fill="#0B5C66"/>
+                      <rect x="145" y="115" width="60" height="6" rx="3" fill="#F5A623"/>
+                      <rect x="145" y="130" width="90" height="6" rx="3" fill="#FF6B4A"/>
+                      <rect x="145" y="145" width="45" height="6" rx="3" fill="#8FE0E6"/>
+                      <rect x="145" y="160" width="75" height="6" rx="3" fill="#F5A623"/>
+                      <path d="M95 195 L305 195 L285 225 L115 225Z" fill="#0E7C86"/>
+                      <circle cx="330" cy="200" r="14" fill="#FFFFFF" stroke="#E7C079" stroke-width="4"/>
+                    </svg>
+                    <span class="carousel__caption">Три часа за туториалом по CSS</span>
+                  </li>
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Блокнот с эскизом сайта">
+                      <rect width="400" height="300" fill="#FFF6E0"/>
+                      <rect x="40" y="30" width="300" height="240" rx="6" fill="#FFFFFF" stroke="#E7C079" stroke-width="2"/>
+                      <g fill="#E7C079"><circle cx="40" cy="50" r="4"/><circle cx="40" cy="80" r="4"/><circle cx="40" cy="110" r="4"/><circle cx="40" cy="140" r="4"/><circle cx="40" cy="170" r="4"/><circle cx="40" cy="200" r="4"/><circle cx="40" cy="230" r="4"/><circle cx="40" cy="250" r="4"/></g>
+                      <rect x="70" y="55" width="240" height="30" rx="2" fill="none" stroke="#123B45" stroke-width="2.5"/>
+                      <rect x="70" y="100" width="110" height="130" rx="2" fill="none" stroke="#123B45" stroke-width="2.5"/>
+                      <rect x="195" y="100" width="115" height="60" rx="2" fill="none" stroke="#0E7C86" stroke-width="2.5"/>
+                      <rect x="195" y="172" width="115" height="58" rx="2" fill="none" stroke="#FF6B4A" stroke-width="2.5"/>
+                      <path d="M285 245 l25 -25 8 8 -25 25 -12 4Z" fill="#F5A623"/>
+                    </svg>
+                    <span class="carousel__caption">Мой первый макет на бумаге</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+            <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+            <div class="carousel__dots"></div>
+          </div>
+        </div>
+        <div class="event__body">
+          <span class="chip chip--accent event__date">Июль</span>
+          <h3 class="event__title">Я начал разбираться в вёрстке</h3>
+          <p class="event__text">Скучным дождливым вечером я наткнулся на видео про HTML и CSS и залип на три часа. Оказалось, что сайт — это не магия, а конструктор с чёткими правилами: сначала рисуешь макет на бумаге, потом переводишь блоки в код. К концу лета я свёрстал первую в жизни страницу — и, кажется, это только начало.</p>
+          <div class="event__tags">
+            <span class="chip">#код</span><span class="chip">#новыйнавык</span><span class="chip">#вёрстка</span>
+          </div>
+        </div>
+      </li>
+
+      <!-- Событие 4 -->
+      <li class="event event--reverse">
+        <span class="event__marker"></span>
+        <div class="event__media">
+          <div class="carousel carousel--compact" data-carousel>
+            <div class="carousel__frame">
+              <div class="carousel__viewport">
+                <ul class="carousel__track">
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Дом в деревне">
+                      <rect width="400" height="180" fill="url(#g-sky-day)"/>
+                      <circle cx="345" cy="45" r="24" fill="url(#g-sun)"/>
+                      <rect y="180" width="400" height="120" fill="url(#g-foliage)"/>
+                      <rect x="140" y="120" width="120" height="90" fill="#F6E1AE"/>
+                      <polygon points="130,120 200,65 270,120" fill="#FF6B4A"/>
+                      <rect x="185" y="155" width="30" height="55" fill="#6B4529"/>
+                      <rect x="150" y="140" width="26" height="26" fill="#0E7C86"/>
+                      <g><circle cx="90" cy="205" r="6" fill="#FF6B4A"/><circle cx="115" cy="212" r="6" fill="#F5A623"/><circle cx="300" cy="210" r="6" fill="#FF6B4A"/><circle cx="325" cy="203" r="6" fill="#F5A623"/></g>
+                      <line x1="20" y1="230" x2="380" y2="230" stroke="#6B4529" stroke-width="3"/>
+                    </svg>
+                    <span class="carousel__caption">Огород, который я почти не залил</span>
+                  </li>
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Велосипед на грунтовой дороге">
+                      <rect width="400" height="180" fill="url(#g-sky-day)"/>
+                      <rect y="180" width="400" height="120" fill="url(#g-foliage)"/>
+                      <path d="M-20 300 Q120 200 220 260 T420 240" fill="none" stroke="url(#g-sand)" stroke-width="46"/>
+                      <circle cx="60" cy="150" r="26" fill="url(#g-foliage)"/>
+                      <circle cx="340" cy="140" r="30" fill="url(#g-foliage)"/>
+                      <g stroke="#123B45" stroke-width="4" fill="none" stroke-linecap="round">
+                        <circle cx="150" cy="235" r="24" fill="#FFF6E0"/>
+                        <circle cx="230" cy="235" r="24" fill="#FFF6E0"/>
+                        <path d="M150 235 L190 200 L230 235 M190 200 L175 235 M190 200 L205 175 L225 175"/>
+                      </g>
+                    </svg>
+                    <span class="carousel__caption">Почти обогнал соседского пса</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+            <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+            <div class="carousel__dots"></div>
+          </div>
+        </div>
+        <div class="event__body">
+          <span class="chip chip--accent event__date">Август</span>
+          <h3 class="event__title">Неделя у бабушки в деревне</h3>
+          <p class="event__text">Каждое лето — неделя без интернета у бабушки. В этот раз я наконец научился поливать грядки, не заливая половину огорода, и почти обогнал соседского пса на велосипеде по грунтовой дороге. Там же прочитал книгу, до которой полгода не доходили руки.</p>
+          <div class="event__tags">
+            <span class="chip">#деревня</span><span class="chip">#велосипед</span><span class="chip">#книги</span>
+          </div>
+        </div>
+      </li>
+
+      <!-- Событие 5 -->
+      <li class="event">
+        <span class="event__marker"></span>
+        <div class="event__media">
+          <div class="carousel carousel--compact" data-carousel>
+            <div class="carousel__frame">
+              <div class="carousel__viewport">
+                <ul class="carousel__track">
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Арбуз и друзья в парке">
+                      <rect width="400" height="150" fill="url(#g-sky-dusk)"/>
+                      <rect y="150" width="400" height="150" fill="url(#g-foliage)"/>
+                      <g fill="#FFF6E0" opacity="0.85"><circle cx="60" cy="40" r="2"/><circle cx="140" cy="25" r="1.6"/><circle cx="320" cy="35" r="2"/></g>
+                      <rect x="90" y="175" width="220" height="90" rx="4" fill="#FF6B4A"/>
+                      <rect x="90" y="203" width="220" height="14" fill="#FFF6E0" opacity="0.5"/>
+                      <path d="M170 175 A50 50 0 0 1 270 175 Z" fill="#356B4E"/>
+                      <path d="M177 175 A43 43 0 0 1 263 175 Z" fill="#E7F4E0"/>
+                      <path d="M185 175 A35 35 0 0 1 255 175 Z" fill="#FF6B4A"/>
+                      <g fill="#123B45"><circle cx="205" cy="160" r="2.5"/><circle cx="220" cy="150" r="2.5"/><circle cx="235" cy="160" r="2.5"/></g>
+                    </svg>
+                    <span class="carousel__caption">Арбуз на общий стол</span>
+                  </li>
+                  <li class="carousel__slide">
+                    <svg class="carousel__photo" viewBox="0 0 400 300" role="img" aria-label="Звёздное небо во дворе">
+                      <rect width="400" height="300" fill="url(#g-sky-night)"/>
+                      <circle cx="90" cy="60" r="20" fill="#FFF6E0" opacity="0.9"/>
+                      <circle cx="100" cy="52" r="20" fill="url(#g-sky-night)"/>
+                      <g fill="#FFF6E0"><circle cx="180" cy="40" r="2"/><circle cx="220" cy="80" r="1.6"/><circle cx="270" cy="45" r="2"/><circle cx="320" cy="90" r="1.6"/><circle cx="150" cy="100" r="1.4"/></g>
+                      <polygon points="0,230 60,190 130,215 190,180 260,210 330,195 400,225 400,300 0,300" fill="#123B45"/>
+                    </svg>
+                    <span class="carousel__caption">Считали звёзды до полуночи</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <button class="carousel__control carousel__control--prev" type="button" aria-label="Предыдущее фото">‹</button>
+            <button class="carousel__control carousel__control--next" type="button" aria-label="Следующее фото">›</button>
+            <div class="carousel__dots"></div>
+          </div>
+        </div>
+        <div class="event__body">
+          <span class="chip chip--accent event__date">Август</span>
+          <h3 class="event__title">Последний тёплый вечер с друзьями</h3>
+          <p class="event__text">За два дня до школы мы всей компанией собрались во дворе, разрезали арбуз на общий стол и до полуночи считали звёзды, притворяясь, что умеем находить созвездия. Никто не хотел расходиться первым — как будто, если посидеть подольше, лето можно продлить ещё на пару дней.</p>
+          <div class="event__tags">
+            <span class="chip">#друзья</span><span class="chip">#звёзды</span><span class="chip">#финал</span>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     Блок .footer  (итог / резюме лета)
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer__inner">
+    <h2 class="footer__title">Итоги лета</h2>
+
+    <div class="footer__stats">
+      <div class="footer__stat"><span class="footer__stat-number">3</span><span class="footer__stat-label">месяца свободы</span></div>
+      <div class="footer__stat"><span class="footer__stat-number">5</span><span class="footer__stat-label">городов и деревень</span></div>
+      <div class="footer__stat"><span class="footer__stat-number">1</span><span class="footer__stat-label">новый навык — вёрстка</span></div>
+      <div class="footer__stat"><span class="footer__stat-number">0</span><span class="footer__stat-label">открытых учебников</span></div>
+    </div>
+
+    <p class="footer__text">Если бы меня попросили описать это лето одним словом, я бы не справился — слишком много всего случилось. Но если коротко: это было лето, когда я вышел из зоны комфорта в горах, влюбился в рассветы и совершенно случайно нашёл занятие, которым хочу заниматься дальше. Первого сентября тетради снова открылись — но теперь рядом с ними лежит блокнот с набросками сайтов.</p>
+
+    <div class="footer__skills">
+      <span class="chip">Разжигать костёр</span>
+      <span class="chip">Верстать на HTML/CSS</span>
+      <span class="chip">Не бояться высоты</span>
+      <span class="chip">Читать бумажные книги</span>
+      <span class="chip">Ценить время с друзьями</span>
+    </div>
+
+    <p class="footer__note">с любовью, лето 2026</p>
+
+    <p class="footer__meta">Сделано как учебный пример вёрстки по методологии БЭМ. Все фотографии на странице — иллюстрации, а не настоящие снимки.</p>
+  </div>
+</footer>
+
+<!-- ============================================================
+     Блок .inspector — учебная утилита «показать БЭМ-классы»
+     ============================================================ -->
+<button class="inspector__toggle" id="inspectorToggle" type="button">Показать БЭМ-классы</button>
+<div class="inspector__tooltip" id="inspectorTooltip" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Карусели ---------- */
+  function initCarousel(root){
+    var track = root.querySelector('.carousel__track');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.carousel__slide'));
+    var dotsWrap = root.querySelector('.carousel__dots');
+    var prevBtn = root.querySelector('.carousel__control--prev');
+    var nextBtn = root.querySelector('.carousel__control--next');
+    var index = 0;
+    var timer = null;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (slides.length <= 1){
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+      return;
+    }
+
+    slides.forEach(function(_, i){
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'carousel__dot';
+      dot.setAttribute('aria-label', 'Перейти к фото ' + (i + 1));
+      dot.addEventListener('click', function(){ goTo(i); restart(); });
+      dotsWrap.appendChild(dot);
+    });
+    var dots = Array.prototype.slice.call(dotsWrap.children);
+
+    function goTo(i){
+      index = (i + slides.length) % slides.length;
+      track.style.transform = 'translateX(-' + (index * 100) + '%)';
+      dots.forEach(function(d, di){
+        d.classList.toggle('carousel__dot--active', di === index);
+      });
+    }
+    function restart(){
+      if (reduceMotion) return;
+      clearInterval(timer);
+      timer = setInterval(function(){ goTo(index + 1); }, 5500);
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', function(){ goTo(index - 1); restart(); });
+    if (nextBtn) nextBtn.addEventListener('click', function(){ goTo(index + 1); restart(); });
+    root.addEventListener('mouseenter', function(){ clearInterval(timer); });
+    root.addEventListener('mouseleave', restart);
+    root.addEventListener('focusin', function(){ clearInterval(timer); });
+    root.addEventListener('focusout', restart);
+
+    goTo(0);
+    restart();
+  }
+  Array.prototype.slice.call(document.querySelectorAll('[data-carousel]')).forEach(initCarousel);
+
+  /* ---------- Учебный инспектор БЭМ-классов ---------- */
+  var toggle = document.getElementById('inspectorToggle');
+  var tooltip = document.getElementById('inspectorTooltip');
+  var inspecting = false;
+  var lastEl = null;
+
+  toggle.addEventListener('click', function(){
+    inspecting = !inspecting;
+    toggle.classList.toggle('inspector__toggle--active', inspecting);
+    toggle.textContent = inspecting ? 'Инспектор включён — наведите на блок' : 'Показать БЭМ-классы';
+    if (!inspecting){
+      tooltip.hidden = true;
+      if (lastEl){ lastEl.classList.remove('inspector-highlight'); lastEl = null; }
+    }
+  });
+
+  document.addEventListener('mousemove', function(e){
+    if (!inspecting) return;
+    var el = e.target.closest('[class]');
+    if (el && (el.id === 'inspectorToggle' || el.id === 'inspectorTooltip')) el = null;
+    if (!el || el === document.body){
+      tooltip.hidden = true;
+      if (lastEl){ lastEl.classList.remove('inspector-highlight'); lastEl = null; }
+      return;
+    }
+    if (el !== lastEl){
+      if (lastEl) lastEl.classList.remove('inspector-highlight');
+      el.classList.add('inspector-highlight');
+      lastEl = el;
+    }
+    var cls = Array.prototype.slice.call(el.classList).filter(function(c){ return c !== 'inspector-highlight'; });
+    tooltip.textContent = cls.length ? ('.' + cls.join(' .')) : '(без класса)';
+    tooltip.hidden = false;
+    var x = e.clientX + 16, y = e.clientY + 16;
+    if (x + 290 > window.innerWidth) x = e.clientX - 296;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  });
+})();
+</script>
+</body>
+</html>
